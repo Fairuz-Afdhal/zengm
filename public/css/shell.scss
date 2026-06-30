@@ -1,0 +1,508 @@
+// Shell chrome: top nav, sidebar, title bar, league score strip.
+// Zero react-bootstrap imports. No view-specific rules here.
+// Merged: sidebar.scss (was a separate file).
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+
+$sidebar-width: 150px;
+
+// .sidebar-inner is needed because you can't put a fixed div in flexbox
+.sidebar-inner {
+	padding: 0.5rem 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	z-index: 1040;
+	border-right: 1px solid var(--zengm-border);
+	position: fixed;
+	transition: left 0.3s ease-in-out;
+	bottom: 0;
+	background-color: var(--zengm-surface-1);
+}
+
+.sidebar-inner .nav-link {
+	font-weight: 500;
+	color: var(--zengm-text-strong);
+	padding: 4px $container-padding-x;
+	white-space: nowrap;
+}
+
+.sidebar-inner .nav-link.active {
+	background-color: var(--zengm-surface-2);
+	color: var(--zengm-brand);
+}
+
+.sidebar-inner .nav-link:hover {
+	background-color: var(--zengm-surface-2);
+}
+
+.sidebar-heading {
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	padding: 0 $container-padding-x;
+	cursor: pointer;
+	@extend .mt-3;
+	@extend .mb-1;
+	@extend .text-body-secondary;
+
+	// Make like h2
+	display: block;
+	font-weight: 500;
+	line-height: 1.2;
+	text-align: left;
+	width: 100%;
+	border: 0;
+
+	&:hover {
+		text-decoration: none;
+	}
+}
+
+@include media-breakpoint-up(xl) {
+	.sidebar {
+		transition: width 0.3s ease-in-out;
+		width: 0;
+	}
+	.sidebar-open {
+		width: $sidebar-width;
+	}
+
+	.sidebar-inner {
+		left: -$sidebar-width;
+		top: var(--zengm-nav-height, 52px);
+		width: $sidebar-width;
+	}
+	.sidebar-open .sidebar-inner {
+		left: 0;
+	}
+}
+
+// Set this here or it flashes when switching between xl and below xl
+.sidebar-fade {
+	opacity: 0;
+}
+
+@include media-breakpoint-down(xl) {
+	.sidebar-inner {
+		left: -190px;
+		top: 0;
+		width: 190px;
+		font-size: 1rem;
+	}
+	.sidebar-heading {
+		font-size: 0.875rem;
+		padding-left: 0.75rem;
+	}
+	.sidebar-inner .nav-link {
+		padding-left: 0.75rem;
+	}
+	.sidebar-open .sidebar-inner {
+		left: 0;
+	}
+
+	// Fade animation only works in one direction!
+	.sidebar-fade {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 0;
+		z-index: -1040;
+		background-color: $black;
+		opacity: 0;
+		transition: opacity 0.3s ease-in-out; // Keep time in sync with SideBar setTimeout
+	}
+
+	.sidebar-fade-open {
+		opacity: 0.2;
+		width: 100%;
+		z-index: 1040;
+	}
+
+	.sidebar-fade-closing {
+		opacity: 0;
+		width: 100%;
+		z-index: 1040;
+	}
+}
+
+// ─── Top nav ─────────────────────────────────────────────────────────────────
+
+.navbar {
+	background-color: var(--zengm-nav-bg);
+
+	// Wire Bootstrap's own component CSS vars so dropdowns, links, toggler
+	// all inherit the correct contrast color without needing separate rules.
+	--bs-navbar-color: var(--zengm-nav-text);
+	--bs-navbar-hover-color: var(--zengm-nav-text);
+	--bs-navbar-active-color: var(--zengm-nav-text);
+	--bs-navbar-brand-color: var(--zengm-nav-text);
+	--bs-navbar-brand-hover-color: var(--zengm-nav-text);
+	--bs-navbar-disabled-color: var(--zengm-nav-text-muted);
+
+	// White hamburger SVG — explicit, no filter:invert() hack
+	--bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255%2C255%2C255%2C0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c%2fsvg%3e");
+	--bs-navbar-toggler-border-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar-brand {
+	// Not sure why, but without this it's 35.5px which screws up alignment of the dropdowns and the border
+	height: 35px;
+
+	img {
+		vertical-align: -3px;
+	}
+
+	span {
+		padding-left: 5px;
+	}
+}
+
+.navbar-border {
+	border-bottom: 1px solid var(--zengm-border);
+}
+
+.dropdown-links .nav-item,
+#top-user-block .nav-item,
+.play-button-wrapper {
+	margin: -8px 0;
+	height: 51px;
+}
+.dropdown-mobile {
+	.dropdown-item {
+		padding-top: 0.75rem !important;
+		padding-bottom: 0.75rem !important;
+	}
+	.kbd {
+		display: none;
+	}
+}
+.dropdown-links .dropdown.show.nav-item {
+	background-color: var(--zengm-nav-hover-bg);
+}
+.dropdown-links .nav-link {
+	padding: 16px 8px;
+}
+@include media-breakpoint-up(xl) {
+	.dropdown-links .nav-link {
+		padding: 16px;
+	}
+}
+
+#top-user-block .nav-link {
+	padding: 16px 0 16px 8px;
+}
+@include media-breakpoint-up(xl) {
+	#top-user-block .nav-link {
+		padding: 16px 0 16px 16px;
+	}
+}
+
+.nav-link {
+	cursor: pointer;
+}
+
+.navbar .dropdown-menu {
+	border-top-color: var(--zengm-border);
+	border-radius: 0;
+	margin-top: 0;
+	padding-bottom: 0;
+	padding-top: 0;
+}
+
+// Needed to fix navbar nesting on xs - not sure why, maybe bug in Bootstrap or Reactstrap?
+.navbar-nav {
+	.dropdown-menu {
+		position: absolute;
+	}
+}
+
+// ─── Keyboard shortcut hints (shown in nav dropdowns) ────────────────────────
+
+.kbd {
+	display: none;
+}
+@include media-breakpoint-up(sm) {
+	.kbd-parent {
+		position: relative;
+		padding-right: 70px;
+	}
+	.kbd {
+		display: block;
+		position: absolute;
+		right: $dropdown-item-padding-x;
+		top: $dropdown-item-padding-y;
+	}
+}
+
+// ─── Play button ─────────────────────────────────────────────────────────────
+
+.play-button {
+	font-size: 1.01562rem;
+	padding: 14px !important;
+	color: #fff !important; // white in light and dark
+	height: 51px;
+}
+.play-button-success {
+	background-color: var(--zengm-cta-from);
+	border-color: var(--zengm-cta-to);
+
+	&:hover,
+	&:active,
+	&:focus {
+		background-color: var(--zengm-cta-to);
+		border-color: var(--zengm-cta-to);
+	}
+}
+.play-button-danger {
+	background-color: $red;
+
+	&:hover,
+	&:active,
+	&:focus {
+		background-color: shade-color($red, $btn-hover-bg-shade-amount);
+	}
+}
+
+button.fast-forward {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left-width: 0 !important;
+}
+
+// ─── Multi-team menu ─────────────────────────────────────────────────────────
+
+.multi-team-menu {
+	background-color: var(--zengm-surface-1);
+	border: 1px solid var(--zengm-border);
+	opacity: 0.95;
+	position: fixed;
+	right: 6px;
+	padding-bottom: 6px;
+	border-radius: 0.25em 0.25em 0 0;
+	z-index: 1000;
+}
+
+// ─── Title bar / page toolbar ────────────────────────────────────────────────
+
+.title-bar {
+	gap: 0 10px;
+	min-height: 32px;
+	background-color: var(--zengm-toolbar-bg);
+	border-bottom: 1px solid var(--zengm-toolbar-border);
+	padding-top: 0.35rem;
+	padding-bottom: 0.35rem;
+
+	// Like .container-fluid
+	padding-left: var(--bs-gutter-x, 0.5rem);
+	padding-right: var(--bs-gutter-x, 0.5rem);
+
+	h1 {
+		font-size: 20px;
+		margin-bottom: 7px; // Needed in addition to .title-bar min-height when it wraps onto multiple lines
+	}
+	option {
+		font-size: 12px;
+	}
+	.dropdown-links .dropdown.show.nav-item {
+		background-color: var(--zengm-surface-3);
+	}
+}
+.title-bar-right-links {
+	.nav-item {
+		height: 39px !important;
+	}
+	.nav-link {
+		padding-bottom: 10px !important;
+		padding-top: 6px !important;
+	}
+	.dropdown-menu {
+		margin-top: -5px !important;
+	}
+}
+
+@include media-breakpoint-down(sm) {
+	.title-bar {
+		padding-right: 0;
+	}
+}
+.dropdown-select-wrapper {
+	margin-bottom: 7px; // Needed in addition to .title-bar min-height when it wraps onto multiple lines
+}
+.dropdown-select {
+	display: block;
+	margin: 0 1px;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	padding: 1px 13px 0 2px;
+	background-color: inherit;
+	border: 0;
+	color: inherit;
+	cursor: pointer;
+	text-decoration-style: dashed;
+	background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22200%22%20height%3D%22100%22%3E%3Cpath%20fill%3D%22%23000%22%20d%3D%22M%200%2C0%20L%20100%2C100%20L%20200%2C0%20z%22%2F%3E%3C%2Fsvg%3E");
+	background-repeat: no-repeat, repeat;
+	background-position:
+		right 0 top 45%,
+		0 0;
+	background-size:
+		0.62em auto,
+		100%;
+	font-size: 13px;
+
+	option {
+		color: #000;
+	}
+}
+
+// ─── Segmented controls ───────────────────────────────────────────────────────
+// Wraps .dropdown-select (and optional .btn-group prev/next) in a bordered pill.
+
+.zengm-segment {
+	display: inline-flex;
+	align-items: stretch;
+	border: 1px solid var(--zengm-segment-border);
+	border-radius: var(--zengm-radius-sm);
+	background-color: var(--zengm-segment-bg);
+	overflow: hidden;
+	margin-right: 4px;
+
+	// Flush the prev/next btn-group — remove Bootstrap button chrome
+	.btn-group {
+		display: flex;
+		align-items: stretch;
+
+		.btn {
+			border: none !important;
+			border-radius: 0 !important;
+			background-color: transparent !important;
+			color: var(--zengm-text-muted) !important;
+			padding: 0.1rem 0.45rem;
+			line-height: 1.4;
+
+			&:hover:not(:disabled) {
+				background-color: var(--zengm-surface-2) !important;
+				color: var(--zengm-text-strong) !important;
+			}
+
+			&:disabled {
+				opacity: 0.35 !important;
+				box-shadow: none !important;
+			}
+
+			// Divider lines between prev | (select) | next
+			&:first-child {
+				border-right: 1px solid var(--zengm-segment-divider) !important;
+			}
+			&:last-child {
+				border-left: 1px solid var(--zengm-segment-divider) !important;
+			}
+		}
+	}
+
+	// Select field inside the segment: no border, transparent bg
+	.dropdown-select {
+		border: none;
+		background-color: transparent;
+		margin: 0;
+		padding: 0.1rem 1.25rem 0.1rem 0.5rem;
+		align-self: center;
+
+		&:focus {
+			outline: 2px solid var(--zengm-focus);
+			outline-offset: -2px;
+		}
+	}
+}
+
+@include media-breakpoint-up(md) {
+	.dropdown-select {
+		font-size: 14px;
+	}
+	.title-bar {
+		min-height: 38px;
+		h1 {
+			font-size: 24px;
+		}
+	}
+	.title-bar-right-links {
+		.nav-item {
+			height: 38px !important;
+		}
+		.nav-link {
+			padding-bottom: 13px !important;
+			padding-top: 6px !important;
+		}
+		.dropdown-menu {
+			margin-top: -5px !important;
+		}
+	}
+}
+
+// ─── League top bar (score strip) ────────────────────────────────────────────
+
+$league-top-bar-toggle-width: 15px;
+.league-top-bar {
+	padding-right: $league-top-bar-toggle-width;
+	background-color: var(--zengm-surface-1);
+	border-bottom: 1px solid var(--zengm-toolbar-border);
+
+	// For scrollbar that grows on hover
+	height: 63px;
+	@include media-breakpoint-up(sm) {
+		&::-webkit-scrollbar {
+			height: 0 !important;
+		}
+	}
+}
+.league-top-bar-safari {
+	margin-right: $league-top-bar-toggle-width + 8px;
+}
+.league-top-bar-toggle {
+	border-top-right-radius: 0 !important;
+	border-bottom-right-radius: 0 !important;
+	width: $league-top-bar-toggle-width;
+	height: 56px;
+	z-index: 1000;
+	position: absolute;
+	right: 0px;
+}
+
+.score-box-deadline {
+	height: 94px;
+}
+.score-box-deadline-small {
+	height: 54px;
+}
+
+.score-box-all-star {
+	height: 47px;
+}
+
+.score-box-score {
+	min-width: 44px;
+}
+
+.score-box-action {
+	height: 96px;
+
+	.btn {
+		border-bottom-left-radius: 0px !important;
+		border-top-left-radius: 0px !important;
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+	}
+
+	.btn:not(:first-child) {
+		border-top: 1px solid var(--zengm-border);
+	}
+}
+
+.score-box-left-wrapper {
+	flex-grow: 1;
+}
+@include media-breakpoint-up(sm) {
+	.score-box-left-wrapper {
+		flex-grow: 0;
+	}
+}

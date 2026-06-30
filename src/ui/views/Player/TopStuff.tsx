@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { WatchBlock } from "../../components/WatchBlock.tsx";
 import { helpers } from "../../util/helpers.ts";
 import { toWorker } from "../../util/toWorker.ts";
@@ -402,7 +402,7 @@ const TopStuff = ({
 		}
 
 		statusInfo = (
-			<div className="d-flex align-items-center">
+			<div className="d-flex align-items-center gap-2 flex-wrap mt-1">
 				{injured ? (
 					<InjuryIcon className="ms-0" injury={player.injury} />
 				) : null}
@@ -410,16 +410,11 @@ const TopStuff = ({
 					className={injured ? undefined : "skills-alone"}
 					skills={skills}
 				/>
-				<WatchBlock
-					className="ms-2"
-					pid={player.pid}
-					defaultWatch={player.watch}
-				/>
+				<WatchBlock pid={player.pid} defaultWatch={player.watch} />
 				{player.tid === PLAYER.FREE_AGENT ||
 				player.tid === PLAYER.UNDRAFTED ||
 				player.tid >= PLAYER.FREE_AGENT ? (
 					<Mood
-						className="ms-2"
 						defaultType={
 							player.tid === PLAYER.FREE_AGENT ||
 							player.tid === PLAYER.UNDRAFTED
@@ -489,8 +484,12 @@ const TopStuff = ({
 	// Without this, vertical scrollbar shows if there are no jerseys, due to some weirdness with the negative marginTop values in RatingsOverview
 	const PLACEHOLDER = <div style={{ height: 2 }}></div>;
 
+	const cardStyle: CSSProperties | undefined = teamColors?.[0]
+		? { borderLeftColor: teamColors[0] }
+		: undefined;
+
 	return (
-		<div className="mb-3">
+		<div className="mb-3 player-card" style={cardStyle}>
 			<div className="d-sm-flex align-items-start">
 				<div className="player-bio">
 					<div className="d-flex">
