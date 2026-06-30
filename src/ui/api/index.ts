@@ -1,4 +1,5 @@
 import { ACCOUNT_API_URL } from "../../common/constants.ts";
+import { getAccessToken } from "../util/auth.ts";
 import { realtimeUpdate } from "../util/realtimeUpdate.ts";
 import { local, localActions } from "../util/local.ts";
 import { showEvent } from "../util/logEvent.ts";
@@ -126,7 +127,6 @@ const AUTO_SAVE_STORES = [
 
 const doCloudAutoSave = async (saveId: string) => {
 	try {
-		const { getAccessToken } = await import("../util/auth.ts");
 		const accessToken = await getAccessToken();
 		if (!accessToken) return;
 
