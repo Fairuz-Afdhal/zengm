@@ -11,34 +11,129 @@ type CommunityRoster = {
 	name: string;
 	description: string;
 	url: string;
+	category: string;
 };
 
+const RAW =
+	"https://raw.githubusercontent.com/alexnoob/BasketBall-GM-Rosters/master";
+const REL =
+	"https://github.com/alexnoob/BasketBall-GM-Rosters/releases/download";
+
 const COMMUNITY_ROSTERS: CommunityRoster[] = [
+	// NBA — recent seasons via release assets
 	{
-		id: "euroleague-2025-26",
-		name: "EuroLeague 2025-26",
-		description: "EuroLeague rosters by TheOfficialKG7",
-		url: "https://raw.githubusercontent.com/TheOfficialKG7/BBGM-Euroleague-Rosters/main/Euroleague_2025-26.json",
+		id: "nba-2025-26",
+		name: "2025-26 NBA",
+		description: "by alexnoob",
+		url: `${REL}/2026.0.7/2025-26.NBA.Roster.json`,
+		category: "NBA",
 	},
 	{
+		id: "nba-2024-25",
+		name: "2024-25 NBA",
+		description: "by alexnoob",
+		url: `${REL}/2025.0.1/2024-25.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2023-24",
+		name: "2023-24 NBA",
+		description: "by alexnoob",
+		url: `${REL}/2024.0.1/2023-24.NBA.Roster.json`,
+		category: "NBA",
+	},
+	// NBA — historical seasons from master branch
+	{
 		id: "nba-2020-21",
-		name: "NBA 2020-21",
-		description: "Historical NBA rosters by alexnoob",
-		url: "https://raw.githubusercontent.com/alexnoob/BasketBall-GM-Rosters/main/2020-21.NBA.Roster.json",
+		name: "2020-21 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2020-21.NBA.Roster.json`,
+		category: "NBA",
 	},
 	{
 		id: "nba-2019-20",
-		name: "NBA 2019-20",
-		description: "Historical NBA rosters by alexnoob",
-		url: "https://raw.githubusercontent.com/alexnoob/BasketBall-GM-Rosters/main/2019-20.NBA.Roster.json",
+		name: "2019-20 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2019-20.NBA.Roster.json`,
+		category: "NBA",
 	},
 	{
 		id: "nba-2018-19",
-		name: "NBA 2018-19",
-		description: "Historical NBA rosters by alexnoob",
-		url: "https://raw.githubusercontent.com/alexnoob/BasketBall-GM-Rosters/main/2018-19.NBA.Roster.json",
+		name: "2018-19 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2018-19.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2017-18",
+		name: "2017-18 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2017-18.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2016-17",
+		name: "2016-17 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2016-17.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2015-16",
+		name: "2015-16 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2015-16.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2009-10",
+		name: "2009-10 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2009-10%20Rosters.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-1995-96",
+		name: "1995-96 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/1995-96.NBA.Roster.json`,
+		category: "NBA",
+	},
+	// G-League / D-League
+	{
+		id: "gleague-2018-19",
+		name: "2018-19 G-League",
+		description: "by alexnoob",
+		url: `${RAW}/2018-19%20GLeague%20Roster.json`,
+		category: "G-League",
+	},
+	{
+		id: "dleague-2016-17",
+		name: "2016-17 D-League",
+		description: "by alexnoob",
+		url: `${RAW}/2016-17.DLeague.Roster.json`,
+		category: "G-League",
+	},
+	{
+		id: "dleague-2001-02",
+		name: "2001-02 NBA D-League",
+		description: "by alexnoob",
+		url: `${RAW}/2001-02.NBADLeague.json`,
+		category: "G-League",
+	},
+	// EuroLeague
+	{
+		id: "euroleague-2025-26",
+		name: "2025-26 EuroLeague",
+		description: "by TheOfficialKG7",
+		url: "https://raw.githubusercontent.com/TheOfficialKG7/BBGM-Euroleague-Rosters/main/Euroleague_2025-26.json",
+		category: "EuroLeague",
 	},
 ];
+
+const CATEGORIES = Array.from(
+	new Set(COMMUNITY_ROSTERS.map((r) => r.category)),
+);
 
 const CommunityRostersPanel = ({
 	onLoading,
@@ -47,6 +142,7 @@ const CommunityRostersPanel = ({
 	onLoading: () => void;
 	onDone: (output: Error | LeagueFileUploadOutput) => void;
 }) => {
+	const [category, setCategory] = useState(CATEGORIES[0]!);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -56,6 +152,13 @@ const CommunityRostersPanel = ({
 		"leagueCreation",
 		"leagueCreationPercent",
 	]);
+
+	const filtered = COMMUNITY_ROSTERS.filter((r) => r.category === category);
+
+	const handleCategoryChange = (newCategory: string) => {
+		setCategory(newCategory);
+		setSelectedId(null);
+	};
 
 	const handleLoad = async () => {
 		const roster = COMMUNITY_ROSTERS.find((r) => r.id === selectedId);
@@ -107,8 +210,22 @@ const CommunityRostersPanel = ({
 
 	return (
 		<div>
+			<div className="mb-3">
+				<label className="form-label small">League</label>
+				<select
+					className="form-select form-select-sm"
+					value={category}
+					onChange={(e) => handleCategoryChange(e.target.value)}
+				>
+					{CATEGORIES.map((cat) => (
+						<option key={cat} value={cat}>
+							{cat}
+						</option>
+					))}
+				</select>
+			</div>
 			<div className="list-group mb-3">
-				{COMMUNITY_ROSTERS.map((roster) => (
+				{filtered.map((roster) => (
 					<button
 						key={roster.id}
 						type="button"
