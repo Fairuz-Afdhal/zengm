@@ -1,3 +1,4 @@
+import { ACCOUNT_API_URL } from "../../common/constants.ts";
 import { realtimeUpdate } from "../util/realtimeUpdate.ts";
 import { local, localActions } from "../util/local.ts";
 import { showEvent } from "../util/logEvent.ts";
@@ -150,14 +151,11 @@ const doCloudAutoSave = async (saveId: string) => {
 		formData.append("data", json);
 		if (season) formData.append("season", String(season));
 
-		const response = await fetch(
-			`${(await import("../../common/constants.ts")).ACCOUNT_API_URL}/saves/${saveId}`,
-			{
-				method: "PUT",
-				headers: { Authorization: `Bearer ${accessToken}` },
-				body: formData,
-			},
-		);
+		const response = await fetch(`${ACCOUNT_API_URL}/saves/${saveId}`, {
+			method: "PUT",
+			headers: { Authorization: `Bearer ${accessToken}` },
+			body: formData,
+		});
 
 		if (response.ok) {
 			localActions.update({ cloudSavedAt: Math.floor(Date.now() / 1000) });
