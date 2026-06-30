@@ -20,7 +20,7 @@ const REL =
 	"https://github.com/alexnoob/BasketBall-GM-Rosters/releases/download";
 
 const COMMUNITY_ROSTERS: CommunityRoster[] = [
-	// NBA — recent seasons via release assets
+	// NBA — use release assets for recent seasons, raw for older
 	{
 		id: "nba-2025-26",
 		name: "2025-26 NBA",
@@ -42,7 +42,20 @@ const COMMUNITY_ROSTERS: CommunityRoster[] = [
 		url: `${REL}/2024.0.1/2023-24.NBA.Roster.json`,
 		category: "NBA",
 	},
-	// NBA — historical seasons from master branch
+	{
+		id: "nba-2022-23",
+		name: "2022-23 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2022-23.NBA.Roster.json`,
+		category: "NBA",
+	},
+	{
+		id: "nba-2021-22",
+		name: "2021-22 NBA",
+		description: "by alexnoob",
+		url: `${RAW}/2021-22.NBA.Roster.json`,
+		category: "NBA",
+	},
 	{
 		id: "nba-2020-21",
 		name: "2020-21 NBA",
@@ -99,7 +112,57 @@ const COMMUNITY_ROSTERS: CommunityRoster[] = [
 		url: `${RAW}/1995-96.NBA.Roster.json`,
 		category: "NBA",
 	},
-	// G-League / D-League
+	// NBA Summer League
+	{
+		id: "summer-2025",
+		name: "2025 Summer League",
+		description: "by alexnoob",
+		url: `${RAW}/2025.Summer.League.json`,
+		category: "Summer League",
+	},
+	{
+		id: "summer-2024",
+		name: "2024 Summer League",
+		description: "by alexnoob",
+		url: `${RAW}/2024.Summer.League.json`,
+		category: "Summer League",
+	},
+	{
+		id: "summer-2023",
+		name: "2023 Summer League",
+		description: "by alexnoob",
+		url: `${RAW}/2023.Summer.League.json`,
+		category: "Summer League",
+	},
+	{
+		id: "summer-2022",
+		name: "2022 Summer League",
+		description: "by alexnoob",
+		url: `${RAW}/2022.Summer.League.json`,
+		category: "Summer League",
+	},
+	// G-League
+	{
+		id: "gleague-2024-25",
+		name: "2024-25 G-League",
+		description: "by alexnoob",
+		url: `${RAW}/2024-25.GLeague.json`,
+		category: "G-League",
+	},
+	{
+		id: "gleague-2023-24",
+		name: "2023-24 G-League",
+		description: "by alexnoob",
+		url: `${RAW}/2023-24.GLeague.json`,
+		category: "G-League",
+	},
+	{
+		id: "gleague-2021-22",
+		name: "2021-22 G-League",
+		description: "by alexnoob",
+		url: `${RAW}/2021-22.GLeague.json`,
+		category: "G-League",
+	},
 	{
 		id: "gleague-2018-19",
 		name: "2018-19 G-League",
@@ -121,6 +184,14 @@ const COMMUNITY_ROSTERS: CommunityRoster[] = [
 		url: `${RAW}/2001-02.NBADLeague.json`,
 		category: "G-League",
 	},
+	// WNBA
+	{
+		id: "wnba-2021",
+		name: "2021 WNBA",
+		description: "by alexnoob",
+		url: `${RAW}/2021.WNBA.json`,
+		category: "WNBA",
+	},
 	// EuroLeague
 	{
 		id: "euroleague-2025-26",
@@ -128,6 +199,49 @@ const COMMUNITY_ROSTERS: CommunityRoster[] = [
 		description: "by TheOfficialKG7",
 		url: "https://raw.githubusercontent.com/TheOfficialKG7/BBGM-Euroleague-Rosters/main/Euroleague_2025-26.json",
 		category: "EuroLeague",
+	},
+	// Other international basketball
+	{
+		id: "french-2022-23",
+		name: "2022-23 French Pro A",
+		description: "by alexnoob",
+		url: `${RAW}/2022-23%20French%20Pro%20A.json`,
+		category: "International",
+	},
+	{
+		id: "french-2021-22",
+		name: "2021-22 French Pro A",
+		description: "by alexnoob",
+		url: `${RAW}/2021-22%20French%20Pro%20A.json`,
+		category: "International",
+	},
+	{
+		id: "nbl-2021-22",
+		name: "2021-22 NBL (Australia)",
+		description: "by alexnoob",
+		url: `${RAW}/2021-22.NBL.Roster.json`,
+		category: "International",
+	},
+	{
+		id: "ukrainian-2021-22",
+		name: "2021-22 Ukrainian SuperLeague",
+		description: "by alexnoob",
+		url: `${RAW}/2021-22.Ukrainian.SuperLeague.json`,
+		category: "International",
+	},
+	{
+		id: "romanian-2022-23",
+		name: "2022-23 Romania Liga Nationala",
+		description: "by alexnoob",
+		url: `${RAW}/2022-23%20Romania%20Liga%20Nationala.json`,
+		category: "International",
+	},
+	{
+		id: "korisliiga-2024-25",
+		name: "2024-25 Korisliiga (Finland)",
+		description: "by alexnoob",
+		url: `${RAW}/2024-25.Korisliiga.json`,
+		category: "International",
 	},
 ];
 
@@ -198,7 +312,7 @@ const CommunityRostersPanel = ({
 				leagueCreationPercent: undefined,
 			});
 
-			await onDone({ basicInfo, url: roster.url });
+			onDone({ basicInfo, url: roster.url });
 		} catch (err) {
 			const e = err instanceof Error ? err : new Error("Failed to load roster");
 			setError(e.message);
