@@ -1,7 +1,5 @@
-import { ACCOUNT_API_URL } from "../../common/constants.ts";
 import { checkAccount } from "../util/checkAccount.ts";
 import type { Conditions, UpdateEvents } from "../../common/types.ts";
-import { fetchWrapper } from "../../common/fetchWrapper.ts";
 
 const updateAccountUpdateCard = async (
 	inputs: unknown,
@@ -12,31 +10,13 @@ const updateAccountUpdateCard = async (
 	if (updateEvents.includes("firstRun") || updateEvents.includes("account")) {
 		const partialTopMenu = await checkAccount(conditions);
 
-		try {
-			const data = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/gold_card_info.php`,
-				method: "GET",
-				data: {
-					sport: process.env.SPORT,
-				},
-				credentials: "include",
-			});
-			return {
-				goldCancelled: partialTopMenu.goldCancelled,
-				last4: data.last4,
-				expMonth: data.expMonth,
-				expYear: data.expYear,
-				username: partialTopMenu.username,
-			};
-		} catch {
-			return {
-				goldCancelled: partialTopMenu.goldCancelled,
-				last4: "????",
-				expMonth: "??",
-				expYear: "????",
-				username: partialTopMenu.username,
-			};
-		}
+		return {
+			goldCancelled: partialTopMenu.goldCancelled,
+			last4: "????",
+			expMonth: "??",
+			expYear: "????",
+			username: partialTopMenu.username,
+		};
 	}
 };
 

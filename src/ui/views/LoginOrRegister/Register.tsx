@@ -8,6 +8,7 @@ import { ActionButton } from "../../components/ActionButton.tsx";
 import { analyticsEvent } from "../../util/analyticsEvent.ts";
 import { GameLinks } from "../../components/GameLinks.tsx";
 import { fetchWrapper } from "../../../common/fetchWrapper.ts";
+import { setAccessToken } from "../../util/auth.ts";
 
 export const fields = {
 	username: {
@@ -74,15 +75,19 @@ const Register = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 
 		try {
 			const data = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/register.php`,
+				url: `${ACCOUNT_API_URL}/auth/register`,
 				method: "POST",
 				data: formData,
 				credentials: "include",
 			});
 
 			if (data.success) {
+				if (data.accessToken) {
+					setAccessToken(data.accessToken);
+				}
 				localActions.update({
 					username: data.username,
+					email: data.email,
 				});
 				await toWorker("main", "checkParticipationAchievement", true);
 				realtimeUpdate([], "/account");
@@ -102,8 +107,7 @@ const Register = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 						updatedState.errorMessagePassword2 = data.errors[error];
 					} else if (error === "passwords") {
 						updatedState.errorMessagePassword =
-							updatedState.errorMessagePassword ?? ""; // So it gets highlighted too
-
+							updatedState.errorMessagePassword ?? "";
 						updatedState.errorMessagePassword2 = data.errors[error];
 					}
 				}

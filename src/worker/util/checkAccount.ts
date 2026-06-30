@@ -5,6 +5,7 @@ import local from "./local.ts";
 import toUI from "./toUI.ts";
 import type { Conditions, PartialTopMenu } from "../../common/types.ts";
 import { fetchWrapper } from "../../common/fetchWrapper.ts";
+import { getWorkerToken } from "./workerAuth.ts";
 
 // If it tries to add achievements from IDB to API twice at the same time, weird stuff could happen
 let adding = false;
@@ -13,13 +14,23 @@ export const checkAccount = async (
 	conditions: Conditions,
 ): Promise<PartialTopMenu> => {
 	try {
+		const accessToken = await getWorkerToken();
+
+		if (!accessToken) {
+			// Not logged in
+			return {
+				email: "",
+				goldCancelled: false,
+				goldUntil: Infinity,
+				username: "",
+				mailingList: false,
+			};
+		}
+
 		const data = await fetchWrapper({
-			url: `${ACCOUNT_API_URL}/user_info.php`,
+			url: `${ACCOUNT_API_URL}/auth/me`,
 			method: "GET",
-			data: {
-				sport: process.env.SPORT,
-			},
-			credentials: "include",
+			accessToken,
 		});
 
 		// Keep track of latest here, for ads and multi tab sync
@@ -38,14 +49,10 @@ export const checkAccount = async (
 
 		// If user is logged in, upload any locally saved achievements
 		if (data.username !== "" && !adding) {
-			// Should be done inside one transaction to eliminate race conditions, but Firefox doesn't like that and the
-			// risk is very small.
-
 			adding = true;
 
 			const achievements = (await idb.meta.getAll("achievements")).map(
 				(row) => ({
-					// Default difficulty, for upgraded cases
 					difficulty: "normal" as const,
 					...row,
 				}),
@@ -60,10 +67,7 @@ export const checkAccount = async (
 			);
 			for (const [difficulty, rows] of rowsByDifficulty) {
 				const slugs = rows.map(({ slug }) => slug);
-
-				// If any exist, upload
 				if (slugs.length > 0) {
-					// If this fails to save remotely, will be added to IDB again
 					await achievement.add(slugs, conditions, difficulty, true);
 				}
 			}

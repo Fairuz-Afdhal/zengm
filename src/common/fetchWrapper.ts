@@ -4,16 +4,16 @@ export const fetchWrapper = async ({
 	headers,
 	data,
 	credentials,
+	accessToken,
 }: {
 	url: string;
-	method: "GET" | "POST";
-	headers?: {
-		[key: string]: string;
-	};
-	data: FormData | URLSearchParams | Record<string, string>;
+	method: "GET" | "POST" | "PUT" | "DELETE";
+	headers?: Record<string, string>;
+	data?: FormData | URLSearchParams | Record<string, string>;
 	credentials?: "include";
+	accessToken?: string;
 }): Promise<any> => {
-	let body;
+	let body: FormData | URLSearchParams | undefined;
 
 	if (data instanceof FormData || data instanceof URLSearchParams) {
 		body = data;
@@ -21,24 +21,32 @@ export const fetchWrapper = async ({
 		body = new URLSearchParams(data);
 	}
 
-	// For GET request, append data to query string, since fetch doesn't like GET and body
+	// GET requests can't have a body — append data to query string instead
 	if (method === "GET" && body !== undefined) {
 		url += `?${body.toString()}`;
 		body = undefined;
 	}
 
+	const mergedHeaders: Record<string, string> = { ...headers };
+	if (accessToken) {
+		mergedHeaders["Authorization"] = `Bearer ${accessToken}`;
+	}
+
 	const response = await fetch(url, {
 		method,
-		headers: headers ? new Headers(headers) : undefined,
+		headers:
+			Object.keys(mergedHeaders).length > 0
+				? new Headers(mergedHeaders)
+				: undefined,
 		body,
 		credentials,
 	});
+
 	if (!response.ok) {
 		throw new Error(`HTTP error ${response.status}`);
 	}
 
-	// HACK HACK HACK! Some of my APIs (logout) return no content, rather than JSON
-	if (url.endsWith("logout.php")) {
+	if (response.status === 204) {
 		return undefined;
 	}
 

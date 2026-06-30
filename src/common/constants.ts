@@ -8,12 +8,8 @@ import type { CompositeWeights, Phase, DraftType, MoodTrait } from "./types.ts";
 
 export const ACCOUNT_API_URL =
 	process.env.NODE_ENV === "development"
-		? "http://account.basketball-gm.test"
-		: bySport({
-				basketball: "https://account.basketball-gm.com",
-				football: "https://account.football-gm.com",
-				default: "https://account.zengm.com",
-			});
+		? "http://localhost:3001"
+		: "https://account.zengm.com";
 
 export const DIFFICULTY = {
 	Easy: -0.25,
@@ -94,11 +90,6 @@ export const PHASE_TEXT = {
 	"7": "re-sign players",
 	"8": "free agency",
 };
-
-export const STRIPE_PUBLISHABLE_KEY =
-	process.env.NODE_ENV === "development"
-		? "pk_test_Qbz0froGmHLp0dPCwHoYFY08"
-		: "pk_live_Dmo7Vs6uSaoYHrFngr4lM0sa";
 
 export const COMPOSITE_WEIGHTS = bySport<CompositeWeights>({
 	baseball: constantsBaseball.COMPOSITE_WEIGHTS,

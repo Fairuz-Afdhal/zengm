@@ -1,11 +1,12 @@
 import { type SubmitEvent, useRef, useState } from "react";
-import { ACCOUNT_API_URL, GRACE_PERIOD } from "../../../common/constants.ts";
+import { ACCOUNT_API_URL } from "../../../common/constants.ts";
 import { ActionButton } from "../../components/ActionButton.tsx";
 import { toWorker } from "../../util/toWorker.ts";
 import { realtimeUpdate } from "../../util/realtimeUpdate.ts";
 import { localActions } from "../../util/local.ts";
 import { analyticsEvent } from "../../util/analyticsEvent.ts";
 import { fetchWrapper } from "../../../common/fetchWrapper.ts";
+import { setAccessToken } from "../../util/auth.ts";
 
 const Login = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 	const [submitting, setSubmitting] = useState(false);
@@ -25,26 +26,23 @@ const Login = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 
 		try {
 			const data = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/login.php`,
+				url: `${ACCOUNT_API_URL}/auth/login`,
 				method: "POST",
 				data: formData,
 				credentials: "include",
 			});
 
 			if (data.success) {
-				const currentTimestamp = Math.floor(Date.now() / 1000) - GRACE_PERIOD;
-				const gold = currentTimestamp <= data.gold_until;
+				if (data.accessToken) {
+					setAccessToken(data.accessToken);
+				}
+
 				localActions.update({
-					gold,
+					gold: false,
 					username: data.username === "" ? undefined : data.username,
 					email: data.username === "" ? undefined : data.email,
 				});
 
-				if (gold) {
-					await toWorker("main", "initGold", undefined);
-				}
-
-				// Check for participation achievement, if this is the first time logging in to this sport
 				await toWorker("main", "checkParticipationAchievement", false);
 				await toWorker("main", "realtimeUpdate", ["account"]);
 				await realtimeUpdate([], "/account");
@@ -52,7 +50,9 @@ const Login = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 				analyticsEvent("login");
 			} else {
 				setSubmitting(false);
-				setErrorMessage("Invalid username or password.");
+				setErrorMessage(
+					data.errors?.overall ?? "Invalid username or password.",
+				);
 			}
 		} catch (error) {
 			console.error(error);
@@ -65,16 +65,15 @@ const Login = ({ ajaxErrorMsg }: { ajaxErrorMsg: string }) => {
 		<>
 			<h2>Login</h2>
 			<form onSubmit={handleSubmit} ref={formRef}>
-				<input type="hidden" name="sport" value={process.env.SPORT} />
 				<div className="mb-3">
 					<label className="form-label" htmlFor="login-username">
-						Username
+						Username or Email
 					</label>
 					<input
 						type="text"
 						className="form-control"
 						id="login-username"
-						name="username"
+						name="username_or_email"
 						autoComplete="username"
 						required
 					/>

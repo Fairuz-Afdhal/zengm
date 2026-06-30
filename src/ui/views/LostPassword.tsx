@@ -36,10 +36,9 @@ const LostPassword = () => {
 
 		try {
 			const data = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/lost_password.php`,
+				url: `${ACCOUNT_API_URL}/auth/lost-password`,
 				method: "POST",
 				data: formData,
-				credentials: "include",
 			});
 
 			if (data.success) {
@@ -81,7 +80,7 @@ const LostPassword = () => {
 								type="text"
 								className="form-control"
 								id="lostpw-entry"
-								name="entry"
+								name="username_or_email"
 								required
 							/>
 						</div>

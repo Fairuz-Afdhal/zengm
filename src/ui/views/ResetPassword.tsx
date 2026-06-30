@@ -31,14 +31,12 @@ const ResetPassword = ({ token }: View<"resetPassword">) => {
 			// First, see if this is a valid token
 			try {
 				const data = await fetchWrapper({
-					url: `${ACCOUNT_API_URL}/reset_password.php`,
+					url: `${ACCOUNT_API_URL}/auth/reset-password`,
 					method: "POST",
 					data: {
 						action: "check_token",
 						token,
-						sport: process.env.SPORT,
 					},
-					credentials: "include",
 				});
 
 				if (data.success) {
@@ -96,10 +94,9 @@ const ResetPassword = ({ token }: View<"resetPassword">) => {
 
 		try {
 			const data = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/reset_password.php`,
+				url: `${ACCOUNT_API_URL}/auth/reset-password`,
 				method: "POST",
 				data: formData,
-				credentials: "include",
 			});
 
 			if (data.success) {

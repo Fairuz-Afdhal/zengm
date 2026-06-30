@@ -7,6 +7,7 @@ import { realtimeUpdate } from "../../util/realtimeUpdate.ts";
 import { ajaxErrorMsg } from "../LoginOrRegister/index.tsx";
 import { fields } from "../LoginOrRegister/Register.tsx";
 import { fetchWrapper } from "../../../common/fetchWrapper.ts";
+import { getAccessToken } from "../../util/auth.ts";
 
 const formGroupStyle = {
 	width: 300,
@@ -22,32 +23,22 @@ const AccountInfoForm = ({
 	const [state, setState] = useState({
 		submitting: false,
 		errorMessageOverall: undefined as string | undefined,
-		errorMessageUsername: undefined as string | undefined,
 		errorMessageEmail: undefined as string | undefined,
 		errorMessageNewPassword: undefined as string | undefined,
 		errorMessageNewPassword2: undefined as string | undefined,
-		errorMessageOldPassword: undefined as string | undefined,
+		errorMessageCurrentPassword: undefined as string | undefined,
 
-		editUsername: false,
 		editEmail: false,
 		editPassword: false,
 
-		username: initialUsername,
 		email: initialEmail,
 		newPassword: "",
 		newPassword2: "",
-		oldPassword: "",
+		currentPassword: "",
 	});
 
 	const handleChange =
-		(
-			field:
-				| "username"
-				| "email"
-				| "newPassword"
-				| "newPassword2"
-				| "oldPassword",
-		) =>
+		(field: "email" | "newPassword" | "newPassword2" | "currentPassword") =>
 		(event: ChangeEvent<HTMLInputElement>) => {
 			setState({
 				...state,
@@ -55,7 +46,7 @@ const AccountInfoForm = ({
 			});
 		};
 
-	const handleEditCancel = (field: "username" | "email" | "password") => () => {
+	const handleEditCancel = (field: "email" | "password") => () => {
 		const editField = `edit${helpers.upperCaseFirstLetter(field)}` as const;
 
 		if (state[editField]) {
@@ -64,10 +55,7 @@ const AccountInfoForm = ({
 				[editField]: false,
 			};
 
-			if (field === "username") {
-				newState.username = initialUsername;
-				newState.errorMessageUsername = undefined;
-			} else if (field === "email") {
+			if (field === "email") {
 				newState.email = initialEmail;
 				newState.errorMessageEmail = undefined;
 			} else if (field === "password") {
@@ -98,39 +86,28 @@ const AccountInfoForm = ({
 					errorMessageOverall: undefined,
 					errorMessageNewPassword: undefined,
 					errorMessageNewPassword2: undefined,
-					errorMessageOldPassword: undefined,
-					errorMessageUsername: undefined,
+					errorMessageCurrentPassword: undefined,
 				}));
 
-				const toSubmit: {
-					sport: string;
-					username?: string;
-					email?: string;
-					newPassword?: string;
-					newPassword2?: string;
-					oldPassword: string;
-				} = {
-					sport: process.env.SPORT,
-					oldPassword: state.oldPassword,
+				const toSubmit: Record<string, string> = {
+					current_password: state.currentPassword,
 				};
 
-				if (state.editUsername) {
-					toSubmit.username = state.username;
-				}
 				if (state.editEmail) {
 					toSubmit.email = state.email;
 				}
 				if (state.editPassword) {
-					toSubmit.newPassword = state.newPassword;
-					toSubmit.newPassword2 = state.newPassword2;
+					toSubmit.password = state.newPassword;
+					toSubmit.password2 = state.newPassword2;
 				}
 
 				try {
+					const accessToken = await getAccessToken();
 					const data = await fetchWrapper({
-						url: `${ACCOUNT_API_URL}/update_account.php`,
-						method: "POST",
+						url: `${ACCOUNT_API_URL}/account`,
+						method: "PUT",
 						data: toSubmit,
-						credentials: "include",
+						accessToken: accessToken ?? undefined,
 					});
 
 					if (data.success) {
@@ -138,30 +115,27 @@ const AccountInfoForm = ({
 
 						setState((state2) => ({
 							...state2,
-							editUsername: false,
 							editEmail: false,
 							editPassword: false,
-							oldPassword: "",
+							currentPassword: "",
 							submitting: false,
 						}));
 					} else {
 						const updatedState: Partial<typeof state> = {};
 
 						for (const error of Object.keys(data.errors)) {
-							if (error === "username") {
-								updatedState.errorMessageUsername = data.errors[error];
-							} else if (error === "email") {
+							if (error === "email") {
 								updatedState.errorMessageEmail = data.errors[error];
-							} else if (error === "newPassword") {
+							} else if (error === "password") {
 								updatedState.errorMessageNewPassword = data.errors[error];
-							} else if (error === "newPassword2") {
+							} else if (error === "password2") {
 								updatedState.errorMessageNewPassword2 = data.errors[error];
-							} else if (error === "newPasswords") {
+							} else if (error === "passwords") {
 								updatedState.errorMessageNewPassword =
-									updatedState.errorMessageNewPassword ?? ""; // So it gets highlighted too
+									updatedState.errorMessageNewPassword ?? "";
 								updatedState.errorMessageNewPassword2 = data.errors[error];
-							} else if (error === "oldPassword") {
-								updatedState.errorMessageOldPassword = data.errors[error];
+							} else if (error === "current_password") {
+								updatedState.errorMessageCurrentPassword = data.errors[error];
 							} else if (error === "overall") {
 								updatedState.errorMessageOverall = data.errors[error];
 							}
@@ -183,6 +157,10 @@ const AccountInfoForm = ({
 				}
 			}}
 		>
+			<p className="text-body-secondary mb-3">
+				Username: <b>{initialUsername}</b>
+			</p>
+
 			<div
 				className="d-md-flex"
 				style={{
@@ -190,42 +168,6 @@ const AccountInfoForm = ({
 				}}
 			>
 				<div style={formGroupStyle}>
-					<div className="mb-3" style={formGroupStyle}>
-						<label className="form-label" htmlFor="account-username">
-							Username
-						</label>
-						<div className="input-group">
-							<input
-								className={clsx("form-control", {
-									"is-invalid": state.errorMessageUsername !== undefined,
-								})}
-								id="account-username"
-								{...fields.username.inputProps}
-								value={state.username}
-								onChange={handleChange("username")}
-								disabled={!state.editUsername}
-								required={state.editUsername}
-							/>
-							<button
-								className="btn btn-secondary"
-								type="button"
-								onClick={handleEditCancel("username")}
-							>
-								{state.editUsername ? "Cancel" : "Edit"}
-							</button>
-						</div>
-						<span className="form-text text-body-secondary">
-							{fields.username.description}
-						</span>
-						<span
-							className={clsx("form-text", {
-								"text-danger": state.errorMessageUsername,
-							})}
-						>
-							{state.errorMessageUsername}
-						</span>
-					</div>
-
 					<div className="mb-3" style={formGroupStyle}>
 						<label className="form-label" htmlFor="account-email">
 							Email
@@ -323,34 +265,32 @@ const AccountInfoForm = ({
 			</div>
 
 			<div className="mb-3" style={formGroupStyle}>
-				<label className="form-label" htmlFor="account-old-password">
+				<label className="form-label" htmlFor="account-current-password">
 					Confirm Current Password
 				</label>
 				<input
 					className={clsx("form-control", {
-						"is-invalid": state.errorMessageOldPassword !== undefined,
+						"is-invalid": state.errorMessageCurrentPassword !== undefined,
 					})}
-					id="account-old-password"
+					id="account-current-password"
 					{...fields.password.inputProps}
-					value={state.oldPassword}
-					onChange={handleChange("oldPassword")}
+					value={state.currentPassword}
+					onChange={handleChange("currentPassword")}
 					autoComplete="current-password"
 				/>
 				<span
 					className={clsx("form-text", {
-						"text-danger": state.errorMessageOldPassword,
+						"text-danger": state.errorMessageCurrentPassword,
 					})}
 				>
-					{state.errorMessageOldPassword}
+					{state.errorMessageCurrentPassword}
 				</span>
 			</div>
 
 			<ActionButton
 				type="submit"
 				processing={state.submitting}
-				disabled={
-					!state.editUsername && !state.editEmail && !state.editPassword
-				}
+				disabled={!state.editEmail && !state.editPassword}
 			>
 				Save Changes
 			</ActionButton>

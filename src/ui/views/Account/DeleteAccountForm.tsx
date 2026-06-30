@@ -6,6 +6,7 @@ import { toWorker } from "../../util/toWorker.ts";
 import { realtimeUpdate } from "../../util/realtimeUpdate.ts";
 import { ajaxErrorMsg } from "../LoginOrRegister/index.tsx";
 import { fetchWrapper } from "../../../common/fetchWrapper.ts";
+import { getAccessToken, clearAccessToken } from "../../util/auth.ts";
 
 const Dialog = ({
 	username,
@@ -41,14 +42,12 @@ const Dialog = ({
 
 		let response;
 		try {
+			const accessToken = await getAccessToken();
 			response = await fetchWrapper({
-				url: `${ACCOUNT_API_URL}/delete_account.php`,
-				method: "POST",
-				data: {
-					sport: process.env.SPORT,
-					password,
-				},
-				credentials: "include",
+				url: `${ACCOUNT_API_URL}/account`,
+				method: "DELETE",
+				data: { password },
+				accessToken: accessToken ?? undefined,
 			});
 		} catch (error) {
 			console.error(error);
@@ -57,11 +56,12 @@ const Dialog = ({
 		}
 
 		if (response.success) {
+			clearAccessToken();
 			ok();
-		} else if (response.invalidPassword) {
+		} else if (response.errors?.password) {
 			setInvalidPassword(true);
 		} else {
-			cancel("Unknown error");
+			cancel(response.errors?.overall ?? "Unknown error");
 		}
 	};
 
@@ -119,25 +119,10 @@ const Dialog = ({
 	);
 };
 
-const DeleteAccountForm = ({
-	username,
-	showGoldActive,
-}: {
-	username: string;
-	showGoldActive: boolean;
-}) => {
+const DeleteAccountForm = ({ username }: { username: string }) => {
 	const [errorMessage, setErrorMessage] = useState<string | undefined>();
 	const [showDialog, setShowDialog] = useState(false);
 
-	if (showGoldActive) {
-		return (
-			<p>
-				You must cancel your ZenGM Gold subscription before you delete your
-				account. If you're having any trouble with that, please contact{" "}
-				<a href="mailto:jeremy@zengm.com">jeremy@zengm.com</a>.
-			</p>
-		);
-	}
 	return (
 		<>
 			<p>

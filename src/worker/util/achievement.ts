@@ -6,6 +6,7 @@ import logEvent from "./logEvent.ts";
 import type { AchievementWhen, Conditions } from "../../common/types.ts";
 import toUI from "./toUI.ts";
 import { fetchWrapper } from "../../common/fetchWrapper.ts";
+import { getWorkerToken } from "./workerAuth.ts";
 
 type Difficulty = "insane" | "hard" | "normal" | "easy";
 const getDifficulty = (): Difficulty => {
@@ -91,15 +92,21 @@ async function add(
 	}
 
 	try {
+		const accessToken = await getWorkerToken();
+		if (!accessToken) {
+			await addToIndexedDB(slugs);
+			return;
+		}
+
 		const data = await fetchWrapper({
-			url: `${ACCOUNT_API_URL}/add_achievements.php`,
+			url: `${ACCOUNT_API_URL}/achievements`,
 			method: "POST",
 			data: {
 				achievements: slugs.join(","),
-				sport: process.env.SPORT,
+				sport: process.env.SPORT ?? "",
 				difficulty,
 			},
-			credentials: "include",
+			accessToken,
 		});
 
 		if (!data.success) {
@@ -146,22 +153,40 @@ async function getAll(): Promise<
 	}
 
 	try {
-		// Handle any achievements stored in the cloud
-		const achievementsRemote = await fetchWrapper({
-			url: `${ACCOUNT_API_URL}/get_achievements.php`,
-			method: "GET",
-			data: {
-				sport: process.env.SPORT,
-			},
-			credentials: "include",
-		});
+		const accessToken = await getWorkerToken();
+		if (!accessToken) return achievements2;
 
-		// Merge local and remote achievements
+		// Handle any achievements stored in the cloud
+		const remoteArray = (await fetchWrapper({
+			url: `${ACCOUNT_API_URL}/achievements`,
+			method: "GET",
+			accessToken,
+		})) as { slug: string; sport: string; difficulty: string }[];
+
+		// Convert array response to slug-keyed counts
+		const remoteMap: Record<
+			string,
+			{ normal: number; hard: number; insane: number }
+		> = {};
+		for (const { slug, difficulty } of remoteArray) {
+			if (!remoteMap[slug]) {
+				remoteMap[slug] = { normal: 0, hard: 0, insane: 0 };
+			}
+			if (
+				difficulty === "normal" ||
+				difficulty === "hard" ||
+				difficulty === "insane"
+			) {
+				remoteMap[slug][difficulty] += 1;
+			}
+		}
+
+		// Merge remote into local
 		for (const achievement of achievements2) {
-			if (achievementsRemote[achievement.slug] !== undefined) {
+			const remote = remoteMap[achievement.slug];
+			if (remote !== undefined) {
 				for (const difficulty of ["normal", "hard", "insane"] as const) {
-					achievement[difficulty] +=
-						achievementsRemote[achievement.slug][difficulty];
+					achievement[difficulty] += remote[difficulty];
 				}
 			}
 		}

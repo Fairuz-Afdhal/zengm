@@ -6,13 +6,12 @@ export const analyticsEventLocal = async (
 ) => {
 	try {
 		await fetchWrapper({
-			url: `${ACCOUNT_API_URL}/log_event.php`,
+			url: `${ACCOUNT_API_URL}/analytics`,
 			method: "POST",
 			data: {
-				sport: process.env.SPORT,
+				sport: process.env.SPORT ?? "",
 				type,
 			},
-			credentials: "include",
 		});
 	} catch (error) {
 		console.error(error);
