@@ -15,6 +15,7 @@ import {
 	LeagueFileUpload,
 	type LeagueFileUploadOutput,
 } from "../../components/LeagueFileUpload.tsx";
+import CommunityRostersPanel from "./CommunityRostersPanel.tsx";
 import useTitleBar from "../../hooks/useTitleBar.tsx";
 import { helpers } from "../../util/helpers.ts";
 import { logEvent } from "../../util/logEvent.ts";
@@ -231,6 +232,7 @@ type State = {
 		| "default"
 		| "custom-rosters"
 		| "custom-url"
+		| "community-rosters"
 		| "legends"
 		| "real"
 		| "crossEra";
@@ -1167,7 +1169,8 @@ const NewLeague = (props: View<"newLeague">) => {
 
 	const disableWhileLoadingLeagueFile =
 		((state.customize === "custom-rosters" ||
-			state.customize === "custom-url") &&
+			state.customize === "custom-url" ||
+			state.customize === "community-rosters") &&
 			((state.file === undefined && state.url === undefined) ||
 				state.loadingLeagueFile)) ||
 		((state.customize === "real" || state.customize === "legends") &&
@@ -1726,6 +1729,9 @@ const NewLeague = (props: View<"newLeague">) => {
 													<option value="custom-url">
 														Enter league file URL
 													</option>
+													<option value="community-rosters">
+														Community Rosters
+													</option>
 												</select>
 												{state.customize === "custom-rosters" ||
 												state.customize === "custom-url" ? (
@@ -1751,6 +1757,16 @@ const NewLeague = (props: View<"newLeague">) => {
 														}}
 														onDone={handleNewLeagueFile}
 														enterURL={state.customize === "custom-url"}
+													/>
+												</div>
+											) : null}
+											{state.customize === "community-rosters" ? (
+												<div className="my-3">
+													<CommunityRostersPanel
+														onLoading={() => {
+															dispatch({ type: "loadingLeagueFile" });
+														}}
+														onDone={handleNewLeagueFile}
 													/>
 												</div>
 											) : null}
