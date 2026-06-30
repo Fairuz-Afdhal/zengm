@@ -1,4 +1,9 @@
-import { ALL_STAR_GAME_ONLY, PHASE } from "../../../common/constants.ts";
+import {
+	ACCOUNT_API_URL,
+	ALL_STAR_GAME_ONLY,
+	PHASE,
+} from "../../../common/constants.ts";
+import { getWorkerToken } from "../../util/workerAuth.ts";
 import {
 	GameSim,
 	allStar,
@@ -63,12 +68,34 @@ const play = async (
 	gidOneGame?: number,
 	playByPlay?: boolean,
 ) => {
+	const triggerCloudAutoSave = async () => {
+		try {
+			const accessToken = await getWorkerToken();
+			if (!accessToken) return;
+			const lid = g.get("lid");
+			const response = await fetch(`${ACCOUNT_API_URL}/saves/link/${lid}`, {
+				headers: { Authorization: `Bearer ${accessToken}` },
+			});
+			if (!response.ok) return;
+			const { saveId } = (await response.json()) as { saveId: string | null };
+			if (!saveId) return;
+			void toUI("cloudAutoSave", [saveId], conditions);
+		} catch {
+			// Auto-save is best-effort — never block or throw
+		}
+	};
+
 	// This is called when there are no more games to play, either due to the user's request (e.g. 1 week) elapsing or at the end of the regular season
 	const cbNoGames = async (playoffsOver: boolean = false) => {
 		await updateStatus("Saving...");
 		await idb.cache.flush();
 		await updateStatus("Idle");
 		await lock.set("gameSim", false);
+
+		// Trigger background cloud auto-save (only for batch play, not single/live game)
+		if (gidOneGame === undefined) {
+			void triggerCloudAutoSave();
+		}
 
 		// Check to see if the season is over
 		const schedule = await season.getSchedule();

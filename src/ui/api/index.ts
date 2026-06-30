@@ -100,6 +100,77 @@ const updateLocal = (obj: Partial<LocalStateUI>) => {
 	localActions.update(obj);
 };
 
+const AUTO_SAVE_STORES = [
+	"players",
+	"releasedPlayers",
+	"awards",
+	"teams",
+	"teamSeasons",
+	"teamStats",
+	"gameAttributes",
+	"schedule",
+	"playoffSeries",
+	"draftPicks",
+	"trade",
+	"negotiations",
+	"draftLotteryResults",
+	"messages",
+	"playerFeats",
+	"allStars",
+	"scheduledEvents",
+	"seasonLeaders",
+	"savedTrades",
+	"savedTradingBlock",
+] as const;
+
+const doCloudAutoSave = async (saveId: string) => {
+	try {
+		const { getAccessToken } = await import("../util/auth.ts");
+		const accessToken = await getAccessToken();
+		if (!accessToken) return;
+
+		const { makeExportStream } = await import("../util/exportLeague.ts");
+
+		// @ts-ignore — store list satisfies LeagueDBStoreNames[]
+		const stream = await makeExportStream([...AUTO_SAVE_STORES], {
+			compressed: true,
+		});
+
+		const chunks: string[] = [];
+		const reader = stream.getReader();
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			chunks.push(value);
+		}
+		const json = chunks.join("");
+
+		const season = local.getState().season;
+		const formData = new FormData();
+		formData.append("data", json);
+		if (season) formData.append("season", String(season));
+
+		const response = await fetch(
+			`${(await import("../../common/constants.ts")).ACCOUNT_API_URL}/saves/${saveId}`,
+			{
+				method: "PUT",
+				headers: { Authorization: `Bearer ${accessToken}` },
+				body: formData,
+			},
+		);
+
+		if (response.ok) {
+			localActions.update({ cloudSavedAt: Math.floor(Date.now() / 1000) });
+		}
+	} catch (err) {
+		console.error("Cloud auto-save failed:", err);
+	}
+};
+
+const cloudAutoSave = (saveId: string) => {
+	void doCloudAutoSave(saveId);
+};
+
 const updateTeamOvrs = (ovrs: number[]) => {
 	const games = local.getState().games;
 
@@ -145,6 +216,7 @@ export default {
 	analyticsEvent,
 	autoPlayDialog,
 	//bugsnagNotify,
+	cloudAutoSave,
 	confirm,
 	confirmDeleteAllLeagues,
 	crossTabEmit,

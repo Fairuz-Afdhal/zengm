@@ -11,6 +11,7 @@ export { default as autoExpand } from "./autoExpand.ts";
 export { default as autoRelocate } from "./autoRelocate.ts";
 export { default as awardRaces } from "./awardRaces.ts";
 export { default as awardsRecords } from "./awardsRecords.ts";
+export { default as cloudSaves } from "./cloudSaves.ts";
 export { default as colleges } from "./colleges.ts";
 export { default as comparePlayers } from "./comparePlayers.ts";
 export { default as countries } from "./countries.ts";

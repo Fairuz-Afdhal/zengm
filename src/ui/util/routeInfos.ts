@@ -9,6 +9,7 @@ export const routeInfos = {
 	"/account/lost_password": "lostPassword",
 	"/account/reset_password/:token": "resetPassword",
 	"/account/update_card": "accountUpdateCard",
+	"/account/cloud_saves": "cloudSaves",
 	"/settings": "globalSettings",
 	"/settings/default": "defaultNewLeagueSettings",
 	"/settings/keyboard": "keyboardShortcuts",

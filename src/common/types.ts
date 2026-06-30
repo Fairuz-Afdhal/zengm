@@ -1062,6 +1062,7 @@ export type LocalStateUI = {
 	moreInfoTid?: number;
 	stickyFooterAd: boolean;
 	stickyFormButtons: boolean;
+	cloudSavedAt?: number;
 } & {
 	[Key in Exclude<GameAttributesSyncedToUi, "lid">]: GameAttributesLeague[Key];
 };

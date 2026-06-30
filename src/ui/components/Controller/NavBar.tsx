@@ -8,6 +8,23 @@ import LogoAndText from "../LogoAndText.tsx";
 import PlayMenu from "../PlayMenu.tsx";
 import { menuItems } from "../../util/menuItems.tsx";
 
+const CloudSavedBadge = () => {
+	const { cloudSavedAt } = useLocal(["cloudSavedAt"]);
+	if (!cloudSavedAt) return null;
+
+	const secsAgo = Math.floor(Date.now() / 1000) - cloudSavedAt;
+	if (secsAgo > 30) return null;
+
+	return (
+		<span
+			className="badge bg-success ms-2"
+			style={{ fontSize: "0.65rem", verticalAlign: "middle" }}
+		>
+			☁ Saved
+		</span>
+	);
+};
+
 const PhaseStatusBlock = () => {
 	const { liveGameInProgress, phase, phaseText, statusText } = useLocal([
 		"liveGameInProgress",
@@ -23,6 +40,7 @@ const PhaseStatusBlock = () => {
 			{liveGameInProgress ? "Live game" : phaseText}
 			<br />
 			{liveGameInProgress ? "in progress" : statusText}
+			<CloudSavedBadge />
 		</>
 	);
 

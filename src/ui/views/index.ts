@@ -11,6 +11,7 @@ export { default as AutoExpand } from "./AutoExpand.tsx";
 export { default as AutoRelocate } from "./AutoRelocate.tsx";
 export { default as AwardRaces } from "./AwardRaces.tsx";
 export { default as AwardsRecords } from "./AwardsRecords.tsx";
+export { default as CloudSaves } from "./CloudSaves/index.tsx";
 export { default as Colleges } from "./Colleges.tsx";
 export { default as ComparePlayers } from "./ComparePlayers/index.tsx";
 export { default as Countries } from "./Countries.tsx";
